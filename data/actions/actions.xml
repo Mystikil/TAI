@@ -177,4 +177,5 @@
 	<action fromid="18488" toid="18492" script="others/skill_trainer.lua" />
 	<action itemid="20252" script="others/bed_modification_kits.lua" />
 	<action fromid="22845" toid="22846" script="others/teleport.lua" />
+	<action fromid="37044" toid="37045" script="others/alchemy.lua" />
 </actions>
