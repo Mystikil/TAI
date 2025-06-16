@@ -243,8 +243,9 @@ bool ConfigManager::load()
 	boolean[REMOVE_ON_DESPAWN] = getGlobalBoolean(L, "removeOnDespawn", true);
 	boolean[MANASHIELD_BREAKABLE] = getGlobalBoolean(L, "useBreakableManaShield", true);
 	boolean[TWO_FACTOR_AUTH] = getGlobalBoolean(L, "enableTwoFactorAuth", true);
-	boolean[CHECK_DUPLICATE_STORAGE_KEYS] = getGlobalBoolean(L, "checkDuplicateStorageKeys", false);
-	boolean[MONSTER_OVERSPAWN] = getGlobalBoolean(L, "monsterOverspawn", false);
+        boolean[CHECK_DUPLICATE_STORAGE_KEYS] = getGlobalBoolean(L, "checkDuplicateStorageKeys", false);
+        boolean[MONSTER_OVERSPAWN] = getGlobalBoolean(L, "monsterOverspawn", false);
+       boolean[MONSTER_GROUP_SCALING] = getGlobalBoolean(L, "monsterGroupScaling", false);
 
 	string[DEFAULT_PRIORITY] = getGlobalString(L, "defaultPriority", "high");
 	string[SERVER_NAME] = getGlobalString(L, "serverName", "");
@@ -292,8 +293,10 @@ bool ConfigManager::load()
 	integer[QUEST_TRACKER_PREMIUM_LIMIT] = getGlobalNumber(L, "questTrackerPremiumLimit", 15);
 	integer[STAMINA_REGEN_MINUTE] = getGlobalNumber(L, "timeToRegenMinuteStamina", 3 * 60);
 	integer[STAMINA_REGEN_PREMIUM] = getGlobalNumber(L, "timeToRegenMinutePremiumStamina", 6 * 60);
-	integer[PATHFINDING_INTERVAL] = getGlobalNumber(L, "pathfindingInterval", 200);
-	integer[PATHFINDING_DELAY] = getGlobalNumber(L, "pathfindingDelay", 300);
+        integer[PATHFINDING_INTERVAL] = getGlobalNumber(L, "pathfindingInterval", 200);
+        integer[PATHFINDING_DELAY] = getGlobalNumber(L, "pathfindingDelay", 300);
+       integer[MONSTER_GROUP_ATTACK_SCALE] = getGlobalNumber(L, "monsterGroupAttackScale", 20);
+       integer[MONSTER_GROUP_DEFENSE_SCALE] = getGlobalNumber(L, "monsterGroupDefenseScale", 20);
 
 	expStages = loadXMLStages();
 	if (expStages.empty()) {

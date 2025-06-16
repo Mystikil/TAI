@@ -45,10 +45,11 @@ enum boolean_config_t
 	REMOVE_ON_DESPAWN,
 	TWO_FACTOR_AUTH,
 	MANASHIELD_BREAKABLE,
-	CHECK_DUPLICATE_STORAGE_KEYS,
-	MONSTER_OVERSPAWN,
+       CHECK_DUPLICATE_STORAGE_KEYS,
+       MONSTER_OVERSPAWN,
+       MONSTER_GROUP_SCALING,
 
-	LAST_BOOLEAN_CONFIG /* this must be the last one */
+       LAST_BOOLEAN_CONFIG /* this must be the last one */
 };
 
 enum string_config_t
@@ -121,10 +122,12 @@ enum integer_config_t
 	QUEST_TRACKER_PREMIUM_LIMIT,
 	STAMINA_REGEN_MINUTE,
 	STAMINA_REGEN_PREMIUM,
-	PATHFINDING_INTERVAL,
-	PATHFINDING_DELAY,
+       PATHFINDING_INTERVAL,
+       PATHFINDING_DELAY,
+       MONSTER_GROUP_ATTACK_SCALE,
+       MONSTER_GROUP_DEFENSE_SCALE,
 
-	LAST_INTEGER_CONFIG /* this must be the last one */
+       LAST_INTEGER_CONFIG /* this must be the last one */
 };
 
 bool load();
