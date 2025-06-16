@@ -10,7 +10,12 @@ Player skills are defined by `enum skills_t` in `src/enums.h`. The list includes
 SKILL_FIST, SKILL_CLUB, SKILL_SWORD, SKILL_AXE,
 SKILL_DISTANCE, SKILL_SHIELD, SKILL_FISHING,
 SKILL_BLACKSMITHING, SKILL_FARMING, SKILL_JEWELCRAFTING,
-SKILL_MAGLEVEL, SKILL_LEVEL
+SKILL_MAGLEVEL, SKILL_LEVEL,
+SKILL_ALCHEMY, SKILL_COOKING, SKILL_MINING,
+SKILL_WOODCUTTING, SKILL_CARPENTRY, SKILL_TAMING,
+SKILL_SURVIVAL, SKILL_FIRST_AID, SKILL_TRACKING,
+SKILL_THIEVERY, SKILL_LOCKPICKING, SKILL_SAILING,
+SKILL_CARTOGRAPHY, SKILL_BEAST_MASTERY, SKILL_FLETCHING
 ```
 
 Additional skill-related types:
@@ -90,4 +95,4 @@ Other utility structs such as `Outfit_t`, `ShopInfo`, `MarketOffer` describe dat
 
 These functions, together with the enums and scripts above, compose the main feature set of the game server.
 
-\nSee also [AI scripting](ai_scripting.md) for details on customizing monster and NPC behavior.
+\nSee also [AI scripting](ai_scripting.md) for details on customizing monster and NPC behavior. Detailed information about the extended profession system can be found in [new_skills.md](new_skills.md).

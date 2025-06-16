@@ -312,11 +312,28 @@ enum skills_t : uint8_t
         SKILL_FARMING = 8,
         SKILL_JEWELCRAFTING = 9,
 
-        SKILL_MAGLEVEL = 10,
-        SKILL_LEVEL = 11,
 
-        SKILL_FIRST = SKILL_FIST,
-        SKILL_LAST = SKILL_JEWELCRAFTING
+       SKILL_MAGLEVEL = 10,
+       SKILL_LEVEL = 11,
+
+       SKILL_ALCHEMY = 12,
+       SKILL_COOKING = 13,
+       SKILL_MINING = 14,
+       SKILL_WOODCUTTING = 15,
+       SKILL_CARPENTRY = 16,
+       SKILL_TAMING = 17,
+       SKILL_SURVIVAL = 18,
+       SKILL_FIRST_AID = 19,
+       SKILL_TRACKING = 20,
+       SKILL_THIEVERY = 21,
+       SKILL_LOCKPICKING = 22,
+       SKILL_SAILING = 23,
+       SKILL_CARTOGRAPHY = 24,
+       SKILL_BEAST_MASTERY = 25,
+       SKILL_FLETCHING = 26,
+
+       SKILL_FIRST = SKILL_FIST,
+       SKILL_LAST = SKILL_FLETCHING
 };
 
 enum stats_t
