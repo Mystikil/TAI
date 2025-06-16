@@ -67,6 +67,7 @@ endif ()
 
 find_package(Threads REQUIRED)
 find_package(PugiXML CONFIG REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Development)
 
 # Selects LuaJIT if user defines or auto-detected
 if (USE_LUAJIT)
@@ -88,7 +89,7 @@ if (BUILD_TESTING)
 endif ()
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
-include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${MYSQL_INCLUDE_DIR} ${PUGIXML_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${MYSQL_INCLUDE_DIR} ${PUGIXML_INCLUDE_DIR} ${Python3_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
