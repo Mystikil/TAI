@@ -334,11 +334,15 @@ void Npc::onPlayerCloseChannel(Player* player)
 
 void Npc::onThink(uint32_t interval)
 {
-	Creature::onThink(interval);
+        Creature::onThink(interval);
 
-	if (npcEventHandler) {
-		npcEventHandler->onThink();
-	}
+        if (behaviorTree) {
+                behaviorTree->tick(this);
+        }
+
+        if (npcEventHandler) {
+                npcEventHandler->onThink();
+        }
 
 	if (!isIdle && getTimeSinceLastMove() >= walkTicks) {
 		addEventWalk();

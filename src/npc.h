@@ -4,8 +4,10 @@
 #ifndef FS_NPC_H
 #define FS_NPC_H
 
+#include <memory>
 #include "creature.h"
 #include "luascript.h"
+#include "behaviortree.h"
 
 class Npc;
 class Player;
@@ -123,8 +125,11 @@ public:
 
 	CreatureType_t getType() const override { return CREATURETYPE_NPC; }
 
-	uint8_t getSpeechBubble() const override { return speechBubble; }
-	void setSpeechBubble(const uint8_t bubble) { speechBubble = bubble; }
+        uint8_t getSpeechBubble() const override { return speechBubble; }
+        void setSpeechBubble(const uint8_t bubble) { speechBubble = bubble; }
+
+        void setBehaviorTree(std::unique_ptr<BehaviorTree> tree) { behaviorTree = std::move(tree); }
+        BehaviorTree* getBehaviorTree() { return behaviorTree.get(); }
 
 	void doSay(const std::string& text);
 	void doSayToPlayer(Player* player, const std::string& text);
@@ -195,7 +200,8 @@ private:
 	std::string name;
 	std::string filename;
 
-	std::unique_ptr<NpcEventsHandler> npcEventHandler;
+        std::unique_ptr<NpcEventsHandler> npcEventHandler;
+        std::unique_ptr<BehaviorTree> behaviorTree;
 
 	Position masterPos;
 
