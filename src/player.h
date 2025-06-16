@@ -15,6 +15,7 @@
 #include "protocolgame.h"
 #include "town.h"
 #include "vocation.h"
+#include "classless.h"
 
 class House;
 struct Mount;
@@ -321,7 +322,7 @@ public:
 		} else if (hasFlag(PlayerFlag_HasInfiniteCapacity)) {
 			return std::numeric_limits<uint32_t>::max();
 		}
-		return capacity;
+               return capacity + classlessStats.capacity;
 	}
 
 	uint32_t getFreeCapacity() const
@@ -331,12 +332,12 @@ public:
 		} else if (hasFlag(PlayerFlag_HasInfiniteCapacity)) {
 			return std::numeric_limits<uint32_t>::max();
 		}
-		return std::max<int32_t>(0, capacity - inventoryWeight);
+               return std::max<int32_t>(0, capacity + classlessStats.capacity - inventoryWeight);
 	}
 
-	int32_t getMaxHealth() const override { return std::max<int32_t>(1, healthMax + varStats[STAT_MAXHITPOINTS]); }
-	uint32_t getMana() const { return mana; }
-	uint32_t getMaxMana() const { return std::max<int32_t>(0, manaMax + varStats[STAT_MAXMANAPOINTS]); }
+       int32_t getMaxHealth() const override { return std::max<int32_t>(1, healthMax + varStats[STAT_MAXHITPOINTS] + classlessStats.health); }
+       uint32_t getMana() const { return mana; }
+       uint32_t getMaxMana() const { return std::max<int32_t>(0, manaMax + varStats[STAT_MAXMANAPOINTS] + classlessStats.mana); }
 	uint16_t getManaShieldBar() const { return manaShieldBar; }
 	void setManaShieldBar(uint16_t value) { manaShieldBar = value; }
 	uint16_t getMaxManaShieldBar() const { return maxManaShieldBar; }
@@ -356,9 +357,19 @@ public:
 		specialMagicLevelSkill[combatTypeToIndex(type)] += modifier;
 	}
 
-	void setVarStats(stats_t stat, int32_t modifier);
+        void setVarStats(stats_t stat, int32_t modifier);
 
-	int32_t getDefaultStats(stats_t stat) const;
+        bool spendStatPoint(StatAttribute attr)
+        {
+                if (statPoints == 0) {
+                        return false;
+                }
+                ++classlessStats.get(attr);
+                --statPoints;
+                return true;
+        }
+
+        int32_t getDefaultStats(stats_t stat) const;
 
 	void addConditionSuppressions(uint32_t conditions);
 	void removeConditionSuppressions(uint32_t conditions);
@@ -1200,8 +1211,10 @@ private:
 	time_t lastLogout = 0;
 	time_t premiumEndsAt = 0;
 
-	uint64_t experience = 0;
-	uint64_t manaSpent = 0;
+        uint64_t experience = 0;
+       uint32_t statPoints = 0;
+       ClasslessStats classlessStats;
+        uint64_t manaSpent = 0;
 	uint64_t lastAttack = 0;
 	uint64_t bankBalance = 0;
 	int64_t lastFailedFollow = 0;

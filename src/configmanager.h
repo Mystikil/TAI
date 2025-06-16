@@ -48,6 +48,7 @@ enum boolean_config_t
        CHECK_DUPLICATE_STORAGE_KEYS,
        MONSTER_OVERSPAWN,
        MONSTER_GROUP_SCALING,
+       ENABLE_CLASSLESS_SYSTEM,
 
        LAST_BOOLEAN_CONFIG /* this must be the last one */
 };
@@ -126,6 +127,7 @@ enum integer_config_t
        PATHFINDING_DELAY,
        MONSTER_GROUP_ATTACK_SCALE,
        MONSTER_GROUP_DEFENSE_SCALE,
+       POINTS_PER_LEVEL,
 
        LAST_INTEGER_CONFIG /* this must be the last one */
 };

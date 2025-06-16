@@ -1751,13 +1751,17 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText /* = fa
 	experience += exp;
 
 	uint32_t prevLevel = level;
-	while (experience >= nextLevelExp) {
-		++level;
-		healthMax += vocation->getHPGain();
-		health += vocation->getHPGain();
-		manaMax += vocation->getManaGain();
-		mana += vocation->getManaGain();
-		capacity += vocation->getCapGain();
+       while (experience >= nextLevelExp) {
+               ++level;
+               if (ConfigManager::getBoolean(ConfigManager::ENABLE_CLASSLESS_SYSTEM)) {
+                       statPoints += ConfigManager::getNumber(ConfigManager::POINTS_PER_LEVEL);
+               } else {
+                       healthMax += vocation->getHPGain();
+                       health += vocation->getHPGain();
+                       manaMax += vocation->getManaGain();
+                       mana += vocation->getManaGain();
+                       capacity += vocation->getCapGain();
+               }
 
 		currLevelExp = nextLevelExp;
 		nextLevelExp = Player::getExpForLevel(level + 1);
