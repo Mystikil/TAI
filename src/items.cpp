@@ -198,6 +198,7 @@ const std::unordered_map<std::string, ItemParseAttributes_t> ItemParseAttributes
     {"storeitem", ITEM_PARSE_STOREITEM},
     {"worth", ITEM_PARSE_WORTH},
     {"supply", ITEM_PARSE_SUPPLY},
+    {"weaponrarity", ITEM_PARSE_WEAPONRARITY},
 };
 
 const std::unordered_map<std::string, ItemTypes_t> ItemTypesMap = {{"key", ITEM_TYPE_KEY},
@@ -227,6 +228,14 @@ const std::unordered_map<std::string, RaceType_t> RaceTypesMap = {
 const std::unordered_map<std::string, WeaponType_t> WeaponTypesMap = {
     {"sword", WEAPON_SWORD},       {"club", WEAPON_CLUB}, {"axe", WEAPON_AXE},         {"shield", WEAPON_SHIELD},
     {"distance", WEAPON_DISTANCE}, {"wand", WEAPON_WAND}, {"ammunition", WEAPON_AMMO}, {"quiver", WEAPON_QUIVER},
+};
+
+const std::unordered_map<std::string, WeaponRarity_t> WeaponRarityMap = {
+    {"common", WEAPON_RARITY_COMMON},
+    {"uncommon", WEAPON_RARITY_UNCOMMON},
+    {"normal", WEAPON_RARITY_NORMAL},
+    {"rare", WEAPON_RARITY_RARE},
+    {"legendary", WEAPON_RARITY_LEGENDARY},
 };
 
 const std::unordered_map<std::string, FluidTypes_t> FluidTypesMap = {
@@ -714,10 +723,21 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 					break;
 				}
 
-				case ITEM_PARSE_SUPPLY: {
-					it.supply = valueAttribute.as_bool();
-					break;
-				}
+                               case ITEM_PARSE_SUPPLY: {
+                                       it.supply = valueAttribute.as_bool();
+                                       break;
+                               }
+
+                               case ITEM_PARSE_WEAPONRARITY: {
+                                       std::string rarityValue = boost::algorithm::to_lower_copy<std::string>(valueAttribute.as_string());
+                                       auto rarityIt = WeaponRarityMap.find(rarityValue);
+                                       if (rarityIt != WeaponRarityMap.end()) {
+                                               it.weaponRarity = rarityIt->second;
+                                       } else {
+                                               std::cout << "[Warning - Items::parseItemNode] Unknown weapon rarity: " << valueAttribute.as_string() << std::endl;
+                                       }
+                                       break;
+                               }
 
 				case ITEM_PARSE_ARMOR: {
 					it.armor = pugi::cast<int32_t>(valueAttribute.value());

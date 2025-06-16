@@ -214,7 +214,8 @@ enum ItemParseAttributes_t
 	ITEM_PARSE_BOOSTPERCENTDROWN,
 	ITEM_PARSE_BOOSTPERCENTPHYSICAL,
 	ITEM_PARSE_BOOSTPERCENTHEALING,
-	ITEM_PARSE_SUPPLY,
+        ITEM_PARSE_SUPPLY,
+       ITEM_PARSE_WEAPONRARITY,
 };
 
 struct Abilities
@@ -296,11 +297,11 @@ public:
 		return *abilities;
 	}
 
-	std::string getPluralName() const
-	{
-		if (!pluralName.empty()) {
-			return pluralName;
-		}
+        std::string getPluralName() const
+        {
+                if (!pluralName.empty()) {
+                        return pluralName;
+                }
 
 		if (showCount == 0) {
 			return name;
@@ -313,9 +314,14 @@ public:
 		std::string str;
 		str.reserve(name.length() + 1);
 		str.assign(name);
-		str += 's';
-		return str;
-	}
+                str += 's';
+                return str;
+        }
+
+       uint8_t getRarityPerkCount() const
+       {
+               return static_cast<uint8_t>(weaponRarity);
+       }
 
 	itemgroup_t group = ITEM_GROUP_NONE;
 	ItemTypes_t type = ITEM_TYPE_NONE;
@@ -370,8 +376,9 @@ public:
 
 	MagicEffectClasses magicEffect = CONST_ME_NONE;
 	Direction bedPartnerDir = DIRECTION_NONE;
-	WeaponType_t weaponType = WEAPON_NONE;
-	Ammo_t ammoType = AMMO_NONE;
+        WeaponType_t weaponType = WEAPON_NONE;
+       WeaponRarity_t weaponRarity = WEAPON_RARITY_COMMON;
+        Ammo_t ammoType = AMMO_NONE;
 	ShootType_t shootType = CONST_ANI_NONE;
 	RaceType_t corpseType = RACE_NONE;
 	FluidTypes_t fluidSource = FLUID_NONE;
