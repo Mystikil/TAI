@@ -77,14 +77,20 @@ local function sendCombatStats(self, msg)
 	return true
 end
 
+local SKILL_BLACKSMITHING = SKILL_FISHING + 1
+local SKILL_ALCHEMY = SKILL_FISHING + 2
+local CUSTOM_SKILL_LAST = SKILL_ALCHEMY
+
 local clientSkillsId = {
-	[0] = CYCLOPEDIA_SKILL_FIST,
-	[1] = CYCLOPEDIA_SKILL_CLUB,
-	[2] = CYCLOPEDIA_SKILL_SWORD,
-	[3] = CYCLOPEDIA_SKILL_AXE,
-	[4] = CYCLOPEDIA_SKILL_DISTANCE,
-	[5] = CYCLOPEDIA_SKILL_SHIELDING,
-	[6] = CYCLOPEDIA_SKILL_FISHING
+        [0] = CYCLOPEDIA_SKILL_FIST,
+        [1] = CYCLOPEDIA_SKILL_CLUB,
+        [2] = CYCLOPEDIA_SKILL_SWORD,
+        [3] = CYCLOPEDIA_SKILL_AXE,
+        [4] = CYCLOPEDIA_SKILL_DISTANCE,
+        [5] = CYCLOPEDIA_SKILL_SHIELDING,
+        [6] = CYCLOPEDIA_SKILL_FISHING,
+        [7] = CYCLOPEDIA_SKILL_BLACKSMITHING,
+        [8] = CYCLOPEDIA_SKILL_ALCHEMY
 }
 
 local function sendGeneralStats(self, msg)
@@ -131,15 +137,23 @@ local function sendGeneralStats(self, msg)
 	msg:addU16(self:getBaseMagicLevel()) -- base + loyalty bonus
 	msg:addU16(self:getMagicLevelPercent() * 100)
 
-	for i = SKILL_FIST, SKILL_FISHING, 1 do
-		msg:addByte(clientSkillsId[i])
-		msg:addU16(self:getEffectiveSkillLevel(i))
-		msg:addU16(self:getSkillLevel(i))
+       for i = SKILL_FIST, CUSTOM_SKILL_LAST do
+               msg:addByte(clientSkillsId[i])
+               if i <= SKILL_FISHING then
+                       msg:addU16(self:getEffectiveSkillLevel(i))
+                       msg:addU16(self:getSkillLevel(i))
 
-		-- base + loyalty bonus
-		msg:addU16(self:getSkillLevel(i))
-		msg:addU16(self:getSkillPercent(i) * 100)
-	end
+                       -- base + loyalty bonus
+                       msg:addU16(self:getSkillLevel(i))
+                       msg:addU16(self:getSkillPercent(i) * 100)
+               else
+                       -- trade skills are not tracked yet
+                       msg:addU16(0)
+                       msg:addU16(0)
+                       msg:addU16(0)
+                       msg:addU16(0)
+               end
+       end
 
 	msg:addByte(0) -- magic boost (element and value)
 
