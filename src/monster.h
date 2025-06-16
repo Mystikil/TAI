@@ -67,9 +67,9 @@ public:
 	const Position& getMasterPos() const { return masterPos; }
 	void setMasterPos(Position pos) { masterPos = pos; }
 
-	RaceType_t getRace() const override { return mType->info.race; }
-	int32_t getArmor() const override { return mType->info.armor; }
-	int32_t getDefense() const override { return mType->info.defense; }
+       RaceType_t getRace() const override { return mType->info.race; }
+       int32_t getArmor() const override { return static_cast<int32_t>(mType->info.armor * defenseScale); }
+       int32_t getDefense() const override { return static_cast<int32_t>(mType->info.defense * defenseScale); }
 	bool isPushable() const override { return mType->info.pushable && baseSpeed != 0; }
 	bool isAttackable() const override { return mType->info.isAttackable; }
 
@@ -111,8 +111,9 @@ public:
 	void doAttacking(uint32_t interval) override;
 	bool hasExtraSwing() override { return lastMeleeAttack == 0; }
 
-	bool searchTarget(TargetSearchType_t searchType = TARGETSEARCH_DEFAULT);
-	bool selectTarget(Creature* creature);
+        bool searchTarget(TargetSearchType_t searchType = TARGETSEARCH_DEFAULT);
+        bool selectTarget(Creature* creature);
+       void updateGroupScaling(Creature* creature);
 
 	const CreatureList& getTargetList() const { return targetList; }
 	const CreatureHashSet& getFriendList() const { return friendList; }
@@ -165,7 +166,10 @@ private:
 	bool isIdle = true;
 	bool isMasterInRange = false;
 	bool randomStepping = false;
-	bool walkingToSpawn = false;
+        bool walkingToSpawn = false;
+
+       float attackScale = 1.f;
+       float defenseScale = 1.f;
 
 	void onCreatureEnter(Creature* creature);
 	void onCreatureLeave(Creature* creature);

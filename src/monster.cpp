@@ -7,10 +7,12 @@
 
 #include "condition.h"
 #include "configmanager.h"
+#include "party.h"
 #include "events.h"
 #include "game.h"
 #include "spectators.h"
 #include "spells.h"
+#include <cmath>
 
 extern Game g_game;
 extern Monsters g_monsters;
@@ -37,8 +39,9 @@ Monster::Monster(MonsterType* mType) : Creature(), nameDescription(mType->nameDe
 	health = mType->info.health;
 	healthMax = mType->info.healthMax;
 	baseSpeed = mType->info.baseSpeed;
-	internalLight = mType->info.light;
-	hiddenHealth = mType->info.hiddenHealth;
+        internalLight = mType->info.light;
+        hiddenHealth = mType->info.hiddenHealth;
+       updateGroupScaling(nullptr);
 
 	// register creature events
 	for (const std::string& scriptName : mType->info.scripts) {
@@ -152,7 +155,10 @@ void Monster::onCreatureAppear(Creature* creature, bool isLogin)
 
 void Monster::onRemoveCreature(Creature* creature, bool isLogout)
 {
-	Creature::onRemoveCreature(creature, isLogout);
+        Creature::onRemoveCreature(creature, isLogout);
+       if (creature == attackedCreature) {
+               updateGroupScaling(nullptr);
+       }
 
 	if (mType->info.creatureDisappearEvent != -1) {
 		// onCreatureDisappear(self, creature)
@@ -679,8 +685,9 @@ bool Monster::selectTarget(Creature* creature)
 	}
 
 	if (isHostile() || isSummon()) {
-		if (canAttackCreature(creature)) {
-			setAttackedCreature(creature);
+               if (canAttackCreature(creature)) {
+                       setAttackedCreature(creature);
+                       updateGroupScaling(creature);
 
 			if (isHostile()) {
 				g_dispatcher.addTask([id = getID()]() { g_game.checkCreatureAttack(id); });
@@ -847,8 +854,8 @@ void Monster::doAttacking(uint32_t interval)
 					lookUpdated = true;
 				}
 
-				minCombatValue = spellBlock.minCombatValue;
-				maxCombatValue = spellBlock.maxCombatValue;
+                               minCombatValue = std::lround(spellBlock.minCombatValue * attackScale);
+                               maxCombatValue = std::lround(spellBlock.maxCombatValue * attackScale);
 				spellBlock.spell->castSpell(this, attackedCreature);
 
 				if (spellBlock.isMelee) {
@@ -982,8 +989,8 @@ void Monster::onThinkDefense(uint32_t interval)
 		}
 
 		if ((spellBlock.chance >= static_cast<uint32_t>(uniform_random(1, 100)))) {
-			minCombatValue = spellBlock.minCombatValue;
-			maxCombatValue = spellBlock.maxCombatValue;
+                       minCombatValue = std::lround(spellBlock.minCombatValue * attackScale);
+                       maxCombatValue = std::lround(spellBlock.maxCombatValue * attackScale);
 			spellBlock.spell->castSpell(this, this);
 		}
 	}
@@ -1863,7 +1870,8 @@ bool Monster::canWalkTo(Position pos, Direction direction) const
 
 void Monster::death(Creature*)
 {
-	removeAttackedCreature();
+        removeAttackedCreature();
+       updateGroupScaling(nullptr);
 
 	for (Creature* summon : summons) {
 		summon->changeHealth(-summon->getHealth());
@@ -2040,10 +2048,36 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 
 bool Monster::canPushItems() const
 {
-	Monster* master = this->master ? this->master->getMonster() : nullptr;
-	if (master) {
-		return master->mType->info.canPushItems;
-	}
+        Monster* master = this->master ? this->master->getMonster() : nullptr;
+        if (master) {
+                return master->mType->info.canPushItems;
+        }
 
-	return mType->info.canPushItems;
+        return mType->info.canPushItems;
+}
+
+void Monster::updateGroupScaling(Creature* creature)
+{
+       attackScale = 1.f;
+       defenseScale = 1.f;
+       if (!ConfigManager::getBoolean(ConfigManager::MONSTER_GROUP_SCALING)) {
+               return;
+       }
+       if (!creature) {
+               return;
+       }
+
+       if (Player* player = creature->getPlayer()) {
+               size_t groupSize = 1;
+               if (Party* party = player->getParty()) {
+                       groupSize += party->getMemberCount();
+               }
+               int extra = static_cast<int>(groupSize) - 1;
+               if (extra > 0) {
+                       float atk = ConfigManager::getNumber(ConfigManager::MONSTER_GROUP_ATTACK_SCALE) / 100.f;
+                       float def = ConfigManager::getNumber(ConfigManager::MONSTER_GROUP_DEFENSE_SCALE) / 100.f;
+                       attackScale += atk * extra;
+                       defenseScale += def * extra;
+               }
+       }
 }
