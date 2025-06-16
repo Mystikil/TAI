@@ -163,6 +163,10 @@ monsterGroupAttackScale = 20
 -- Percentage increase in monster defense per extra player
 monsterGroupDefenseScale = 20
 
+-- Classless system
+enableClasslessSystem = false
+pointsPerLevel = 5
+
 -- Stamina
 staminaSystem = true
 timeToRegenMinuteStamina = 3 * 60

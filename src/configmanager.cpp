@@ -246,6 +246,7 @@ bool ConfigManager::load()
         boolean[CHECK_DUPLICATE_STORAGE_KEYS] = getGlobalBoolean(L, "checkDuplicateStorageKeys", false);
         boolean[MONSTER_OVERSPAWN] = getGlobalBoolean(L, "monsterOverspawn", false);
        boolean[MONSTER_GROUP_SCALING] = getGlobalBoolean(L, "monsterGroupScaling", false);
+       boolean[ENABLE_CLASSLESS_SYSTEM] = getGlobalBoolean(L, "enableClasslessSystem", false);
 
 	string[DEFAULT_PRIORITY] = getGlobalString(L, "defaultPriority", "high");
 	string[SERVER_NAME] = getGlobalString(L, "serverName", "");
@@ -297,6 +298,7 @@ bool ConfigManager::load()
         integer[PATHFINDING_DELAY] = getGlobalNumber(L, "pathfindingDelay", 300);
        integer[MONSTER_GROUP_ATTACK_SCALE] = getGlobalNumber(L, "monsterGroupAttackScale", 20);
        integer[MONSTER_GROUP_DEFENSE_SCALE] = getGlobalNumber(L, "monsterGroupDefenseScale", 20);
+       integer[POINTS_PER_LEVEL] = getGlobalNumber(L, "pointsPerLevel", 5);
 
 	expStages = loadXMLStages();
 	if (expStages.empty()) {
