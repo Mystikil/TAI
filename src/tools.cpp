@@ -704,8 +704,53 @@ std::string getSkillName(uint8_t skillid)
 		case SKILL_MAGLEVEL:
 			return "magic level";
 
-		case SKILL_LEVEL:
-			return "level";
+                case SKILL_LEVEL:
+                        return "level";
+
+               case SKILL_ALCHEMY:
+                       return "alchemy";
+
+               case SKILL_COOKING:
+                       return "cooking";
+
+               case SKILL_MINING:
+                       return "mining";
+
+               case SKILL_WOODCUTTING:
+                       return "woodcutting";
+
+               case SKILL_CARPENTRY:
+                       return "carpentry";
+
+               case SKILL_TAMING:
+                       return "taming";
+
+               case SKILL_SURVIVAL:
+                       return "survival";
+
+               case SKILL_FIRST_AID:
+                       return "first aid";
+
+               case SKILL_TRACKING:
+                       return "tracking";
+
+               case SKILL_THIEVERY:
+                       return "thievery";
+
+               case SKILL_LOCKPICKING:
+                       return "lockpicking";
+
+               case SKILL_SAILING:
+                       return "sailing";
+
+               case SKILL_CARTOGRAPHY:
+                       return "cartography";
+
+               case SKILL_BEAST_MASTERY:
+                       return "beast mastery";
+
+               case SKILL_FLETCHING:
+                       return "fletching";
 
 		default:
 			return "unknown";
