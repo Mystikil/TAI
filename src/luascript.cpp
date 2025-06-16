@@ -3142,10 +3142,12 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod(L, "ItemType", "getDecayId", LuaScriptInterface::luaItemTypeGetDecayId);
 	registerMethod(L, "ItemType", "getRequiredLevel", LuaScriptInterface::luaItemTypeGetRequiredLevel);
 	registerMethod(L, "ItemType", "getAmmoType", LuaScriptInterface::luaItemTypeGetAmmoType);
-	registerMethod(L, "ItemType", "getCorpseType", LuaScriptInterface::luaItemTypeGetCorpseType);
-	registerMethod(L, "ItemType", "getClassification", LuaScriptInterface::luaItemTypeGetClassification);
+       registerMethod(L, "ItemType", "getCorpseType", LuaScriptInterface::luaItemTypeGetCorpseType);
+       registerMethod(L, "ItemType", "getClassification", LuaScriptInterface::luaItemTypeGetClassification);
+       registerMethod(L, "ItemType", "getWeaponRarity", LuaScriptInterface::luaItemTypeGetWeaponRarity);
+       registerMethod(L, "ItemType", "getRarityPerkCount", LuaScriptInterface::luaItemTypeGetRarityPerkCount);
 
-	registerMethod(L, "ItemType", "getAbilities", LuaScriptInterface::luaItemTypeGetAbilities);
+       registerMethod(L, "ItemType", "getAbilities", LuaScriptInterface::luaItemTypeGetAbilities);
 
 	registerMethod(L, "ItemType", "hasShowAttributes", LuaScriptInterface::luaItemTypeHasShowAttributes);
 	registerMethod(L, "ItemType", "hasShowCount", LuaScriptInterface::luaItemTypeHasShowCount);
@@ -13376,14 +13378,38 @@ int LuaScriptInterface::luaItemTypeGetCorpseType(lua_State* L)
 
 int LuaScriptInterface::luaItemTypeGetClassification(lua_State* L)
 {
-	// itemType:getClassification()
-	const ItemType* itemType = tfs::lua::getUserdata<const ItemType>(L, 1);
-	if (itemType) {
-		lua_pushnumber(L, itemType->classification);
-	} else {
-		lua_pushnil(L);
-	}
-	return 1;
+        // itemType:getClassification()
+        const ItemType* itemType = tfs::lua::getUserdata<const ItemType>(L, 1);
+        if (itemType) {
+                lua_pushnumber(L, itemType->classification);
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaItemTypeGetWeaponRarity(lua_State* L)
+{
+        // itemType:getWeaponRarity()
+        const ItemType* itemType = tfs::lua::getUserdata<const ItemType>(L, 1);
+        if (itemType) {
+                lua_pushnumber(L, itemType->weaponRarity);
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaItemTypeGetRarityPerkCount(lua_State* L)
+{
+        // itemType:getRarityPerkCount()
+        const ItemType* itemType = tfs::lua::getUserdata<const ItemType>(L, 1);
+        if (itemType) {
+                lua_pushnumber(L, itemType->getRarityPerkCount());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
 }
 
 int LuaScriptInterface::luaItemTypeGetAbilities(lua_State* L)
