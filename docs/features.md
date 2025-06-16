@@ -63,6 +63,7 @@ Key functions:
 - `Player::learnInstantSpell`, `Player::forgetInstantSpell`
 
 Spells are defined through Lua scripts under `data/scripts/spells/`.
+Python modules placed in `data/python` are run during server initialization and can hook into C++ via bindings.
 
 ## Actions
 

@@ -1,6 +1,6 @@
 # AI Scripting
 
-This server allows customizing monster and NPC behavior through Lua scripts. In addition to the traditional callbacks such as `onThink`, `onCreatureSay` and `onCreatureAppear`, a lightweight behavior tree system is available to compose more advanced logic in C++.
+This server allows customizing monster and NPC behavior through Lua scripts. In addition to the traditional callbacks such as `onThink`, `onCreatureSay` and `onCreatureAppear`, a lightweight behavior tree system is available to compose more advanced logic in C++. Python scripts placed under `data/python` are executed on startup, enabling Python-based extensions alongside Lua.
 
 ## Behavior Trees
 

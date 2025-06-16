@@ -16,6 +16,7 @@
 #include "protocollogin.h"
 #include "protocolold.h"
 #include "protocolstatus.h"
+#include "pythonscript.h"
 #include "rsa.h"
 #include "scheduler.h"
 #include "script.h"
@@ -277,6 +278,8 @@ void startServer()
 	// Setup bad allocation handler
 	std::set_new_handler(badAllocationHandler);
 
+	initializePython();
+
 	ServiceManager serviceManager;
 
 	g_dispatcher.start();
@@ -299,6 +302,7 @@ void startServer()
 	g_scheduler.join();
 	g_databaseTasks.join();
 	g_dispatcher.join();
+	finalizePython();
 }
 
 void printServerVersion()
