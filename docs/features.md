@@ -90,3 +90,4 @@ Other utility structs such as `Outfit_t`, `ShopInfo`, `MarketOffer` describe dat
 
 These functions, together with the enums and scripts above, compose the main feature set of the game server.
 
+\nSee also [AI scripting](ai_scripting.md) for details on customizing monster and NPC behavior.

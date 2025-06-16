@@ -4,9 +4,11 @@
 #ifndef FS_MONSTER_H
 #define FS_MONSTER_H
 
+#include <memory>
 #include "creature.h"
 #include "monsters.h"
 #include "position.h"
+#include "behaviortree.h"
 
 class Item;
 class Spawn;
@@ -168,6 +170,8 @@ private:
 	bool randomStepping = false;
         bool walkingToSpawn = false;
 
+        std::unique_ptr<BehaviorTree> behaviorTree;
+
        float attackScale = 1.f;
        float defenseScale = 1.f;
 
@@ -207,10 +211,13 @@ private:
 
 	static bool pushItem(Item* item);
 	static void pushItems(Tile* tile);
-	static bool pushCreature(Creature* creature);
-	static void pushCreatures(Tile* tile);
+        static bool pushCreature(Creature* creature);
+        static void pushCreatures(Tile* tile);
 
-	void onThinkTarget(uint32_t interval);
+        void setBehaviorTree(std::unique_ptr<BehaviorTree> tree) { behaviorTree = std::move(tree); }
+        BehaviorTree* getBehaviorTree() { return behaviorTree.get(); }
+
+        void onThinkTarget(uint32_t interval);
 	void onThinkYell(uint32_t interval);
 	void onThinkDefense(uint32_t interval);
 
