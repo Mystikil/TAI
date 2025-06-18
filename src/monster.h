@@ -5,6 +5,7 @@
 #define FS_MONSTER_H
 
 #include <memory>
+#include <unordered_map>
 #include "creature.h"
 #include "monsters.h"
 #include "position.h"
@@ -171,6 +172,13 @@ private:
         bool walkingToSpawn = false;
 
         std::unique_ptr<BehaviorTree> behaviorTree;
+
+        // remember when each spell was last cast
+        std::unordered_map<const BaseSpell*, uint64_t> spellLastCast;
+
+        // store damage dealt by attackers for aggro
+        Creature* getHighestThreatTarget() const;
+        void callForHelp();
 
        float attackScale = 1.f;
        float defenseScale = 1.f;
