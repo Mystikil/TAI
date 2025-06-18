@@ -8,6 +8,7 @@
 #include "game.h"
 #include "pugicast.h"
 #include "spectators.h"
+#include "tools.h"
 
 extern Game g_game;
 extern LuaEnvironment g_luaEnvironment;
@@ -316,13 +317,14 @@ void Npc::onCreatureSay(Creature* creature, SpeakClasses type, const std::string
 		return;
 	}
 
-	// only players for script events
-	Player* player = creature->getPlayer();
-	if (player) {
-		if (npcEventHandler) {
-			npcEventHandler->onCreatureSay(player, type, text);
-		}
-	}
+        // only players for script events
+        Player* player = creature->getPlayer();
+        if (player) {
+                rememberPlayer(player);
+                if (npcEventHandler) {
+                        npcEventHandler->onCreatureSay(player, type, text);
+                }
+        }
 }
 
 void Npc::onPlayerCloseChannel(Player* player)
@@ -522,12 +524,26 @@ void Npc::removeShopPlayer(Player* player) { shopPlayerSet.erase(player); }
 
 void Npc::closeAllShopWindows()
 {
-	while (!shopPlayerSet.empty()) {
-		Player* player = *shopPlayerSet.begin();
-		if (!player->closeShopWindow()) {
-			removeShopPlayer(player);
-		}
-	}
+        while (!shopPlayerSet.empty()) {
+                Player* player = *shopPlayerSet.begin();
+                if (!player->closeShopWindow()) {
+                        removeShopPlayer(player);
+                }
+        }
+}
+
+void Npc::rememberPlayer(Player* player)
+{
+        interactionMemory[player->getID()] = OTSYS_TIME();
+}
+
+bool Npc::hasRecentMemory(Player* player, uint64_t ms) const
+{
+        auto it = interactionMemory.find(player->getID());
+        if (it == interactionMemory.end()) {
+                return false;
+        }
+        return OTSYS_TIME() - it->second <= ms;
 }
 
 NpcScriptInterface::NpcScriptInterface() : LuaScriptInterface("Npc interface")

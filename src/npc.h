@@ -8,6 +8,7 @@
 #include "creature.h"
 #include "luascript.h"
 #include "behaviortree.h"
+#include <unordered_map>
 
 class Npc;
 class Player;
@@ -194,8 +195,14 @@ private:
 
 	std::map<std::string, std::string> parameters;
 
-	std::set<Player*> shopPlayerSet;
-	std::set<Player*> spectators;
+        std::set<Player*> shopPlayerSet;
+        std::set<Player*> spectators;
+
+        // remembers when players last spoke to this NPC
+        std::unordered_map<uint32_t, uint64_t> interactionMemory;
+
+        void rememberPlayer(Player* player);
+        bool hasRecentMemory(Player* player, uint64_t ms) const;
 
 	std::string name;
 	std::string filename;

@@ -13,6 +13,7 @@
 #include "spectators.h"
 #include "spells.h"
 #include <cmath>
+#include "tools.h"
 
 extern Game g_game;
 extern Monsters g_monsters;
@@ -503,8 +504,15 @@ void Monster::onCreatureLeave(Creature* creature)
 
 bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAULT*/)
 {
-	std::list<Creature*> resultList;
-	const Position& myPos = getPosition();
+        std::list<Creature*> resultList;
+        const Position& myPos = getPosition();
+
+        Creature* threat = getHighestThreatTarget();
+        if (searchType == TARGETSEARCH_DEFAULT && threat) {
+                if (selectTarget(threat)) {
+                        return true;
+                }
+        }
 
 	for (Creature* creature : targetList) {
 		if (followCreature != creature && isTarget(creature)) {
@@ -860,7 +868,8 @@ void Monster::doAttacking(uint32_t interval)
 
                                minCombatValue = std::lround(spellBlock.minCombatValue * attackScale);
                                maxCombatValue = std::lround(spellBlock.maxCombatValue * attackScale);
-				spellBlock.spell->castSpell(this, attackedCreature);
+                                spellBlock.spell->castSpell(this, attackedCreature);
+                                spellLastCast[spellBlock.spell] = OTSYS_TIME() + spellBlock.speed;
 
 				if (spellBlock.isMelee) {
 					lastMeleeAttack = OTSYS_TIME();
@@ -902,7 +911,12 @@ bool Monster::canUseAttack(const Position& pos, const Creature* target) const
 bool Monster::canUseSpell(const Position& pos, const Position& targetPos, const spellBlock_t& sb, uint32_t interval,
                           bool& inRange, bool& resetTicks)
 {
-	inRange = true;
+        inRange = true;
+
+        auto it = spellLastCast.find(sb.spell);
+        if (it != spellLastCast.end() && OTSYS_TIME() < it->second) {
+                return false;
+        }
 
 	if (sb.isMelee) {
 		if (isFleeing() || (OTSYS_TIME() - lastMeleeAttack) < sb.speed) {
@@ -995,9 +1009,10 @@ void Monster::onThinkDefense(uint32_t interval)
 		if ((spellBlock.chance >= static_cast<uint32_t>(uniform_random(1, 100)))) {
                        minCombatValue = std::lround(spellBlock.minCombatValue * attackScale);
                        maxCombatValue = std::lround(spellBlock.maxCombatValue * attackScale);
-			spellBlock.spell->castSpell(this, this);
-		}
-	}
+                        spellBlock.spell->castSpell(this, this);
+                        spellLastCast[spellBlock.spell] = OTSYS_TIME() + spellBlock.speed;
+                }
+        }
 
 	if (!isSummon() && summons.size() < mType->info.maxSummons && hasFollowPath) {
 		for (const summonBlock_t& summonBlock : mType->info.summons) {
@@ -1997,9 +2012,12 @@ void Monster::drainHealth(Creature* attacker, int32_t damage)
 
 void Monster::changeHealth(int32_t healthChange, bool sendHealthChange /* = true*/)
 {
-	// In case a player with ignore flag set attacks the monster
-	setIdle(false);
-	Creature::changeHealth(healthChange, sendHealthChange);
+        // In case a player with ignore flag set attacks the monster
+        setIdle(false);
+        if (healthChange < 0 && getHealth() + healthChange < (getMaxHealth() / 2)) {
+                callForHelp();
+        }
+        Creature::changeHealth(healthChange, sendHealthChange);
 }
 
 bool Monster::challengeCreature(Creature* creature, bool force /* = false*/)
@@ -2084,4 +2102,34 @@ void Monster::updateGroupScaling(Creature* creature)
                        defenseScale += def * extra;
                }
        }
+}
+
+Creature* Monster::getHighestThreatTarget() const {
+    Creature* best = nullptr;
+    int32_t maxDamage = 0;
+    for (const auto& it : damageMap) {
+        Creature* attacker = g_game.getCreatureByID(it.first);
+        if (!attacker || attacker->isRemoved() || !isTarget(attacker)) {
+            continue;
+        }
+        if (it.second.total > maxDamage) {
+            best = attacker;
+            maxDamage = it.second.total;
+        }
+    }
+    return best;
+}
+
+void Monster::callForHelp() {
+    if (!attackedCreature) {
+        return;
+    }
+    SpectatorVec spectators;
+    g_game.map.getSpectators(spectators, position, false, true, 5, 5, 5, 5);
+    for (Creature* spec : spectators) {
+        Monster* mon = spec->getMonster();
+        if (mon && mon != this && !mon->getAttackedCreature()) {
+            mon->selectTarget(attackedCreature);
+        }
+    }
 }
