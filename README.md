@@ -57,7 +57,7 @@
 
 ## 🐧 Linux Setup (Debian/Ubuntu)
 
-```bash
+```
 # Install tools
 sudo apt update && sudo apt install git cmake build-essential libssl-dev zlib1g-dev
 
@@ -73,12 +73,10 @@ cd TAI
 mkdir build && cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
 make -j$(nproc)
-🪟 Windows Setup (VS2022)
+```
+```
+### 🪟 Windows Setup (VS2022)
 Clone the repo:
-
-bash
-Copy
-Edit
 git clone https://github.com/Mystikil/TAI.git
 Install vcpkg and bootstrap it.
 
@@ -89,13 +87,11 @@ Set the startup project to theforgottenserver, then:
 Right-click > Restore vcpkg dependencies
 
 Build > Build Solution (Release or Debug)
+```
 
 ⚙️ Configuration Guide
 Edit your config.lua file to enable/disable key systems:
 
-lua
-Copy
-Edit
 -- Classless System
 enableClasslessSystem = true
 pointsPerLevel = 5
