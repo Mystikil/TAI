@@ -5,6 +5,7 @@
 #define FS_SPAWN_H
 
 #include "position.h"
+#include <memory>
 
 class Monster;
 class MonsterType;
@@ -44,8 +45,8 @@ public:
 
 private:
 	// map of the spawned creatures
-	using SpawnedMap = std::multimap<uint32_t, Monster*>;
-	SpawnedMap spawnedMap;
+        using SpawnedMap = std::multimap<uint32_t, std::shared_ptr<Monster>>;
+        SpawnedMap spawnedMap;
 
 	// map of creatures in the spawn
 	std::map<uint32_t, spawnBlock_t> spawnMap;
