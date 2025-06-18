@@ -74,8 +74,9 @@ mkdir build && cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
 make -j$(nproc)
 ```
-```
+
 ### 🪟 Windows Setup (VS2022)
+```
 Clone the repo:
 git clone https://github.com/Mystikil/TAI.git
 Install vcpkg and bootstrap it.
@@ -88,7 +89,7 @@ Right-click > Restore vcpkg dependencies
 
 Build > Build Solution (Release or Debug)
 ```
-
+```
 ⚙️ Configuration Guide
 Edit your config.lua file to enable/disable key systems:
 
@@ -109,6 +110,8 @@ monsterGroupDefenseScale = 20
 
 -- 2FA
 enableTwoFactorAuth = true
+```
+```
 🧪 Creating New Dungeon Instances
 Dungeon instances can be triggered by tiles or actions:
 
@@ -125,7 +128,8 @@ Monster difficulty scaling
 Boss defeat triggers to auto-close instance
 
 Rare mineral/stone spawn logic
-
+```
+```
 📄 Documentation
 docs/features.md: Full feature list
 
@@ -136,6 +140,7 @@ docs/classless.md: Classless character logic
 docs/alchemy.md: Alchemy recipes and usage
 
 docs/new_skills.md: All custom profession skills
+```
 
 🤝 Contributions
 You're welcome to fork, refactor, and submit PRs! Add support for:
