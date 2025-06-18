@@ -16,6 +16,8 @@
 #include "town.h"
 #include "vocation.h"
 #include "classless.h"
+#include "scheduler.h"
+#include <memory>
 
 class House;
 struct Mount;
@@ -1146,8 +1148,8 @@ private:
 
 	void updateInventoryWeight();
 
-	void setNextWalkActionTask(SchedulerTask* task);
-	void setNextActionTask(SchedulerTask* task, bool resetIdleTime = true);
+        void setNextWalkActionTask(SchedulerTaskPtr task);
+        void setNextActionTask(SchedulerTaskPtr task, bool resetIdleTime = true);
 
 	void death(Creature* lastHitCreature) override;
 	bool dropCorpse(Creature* lastHitCreature, Creature* mostDamageCreature, bool lastHitUnjustified,
@@ -1239,7 +1241,7 @@ private:
 	Npc* shopOwner = nullptr;
 	Party* party = nullptr;
 	Player* tradePartner = nullptr;
-	SchedulerTask* walkTask = nullptr;
+        SchedulerTaskPtr walkTask = nullptr;
 	const Town* town = nullptr;
 	Vocation* vocation = nullptr;
 	StoreInbox* storeInbox = nullptr;
