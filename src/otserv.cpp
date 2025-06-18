@@ -49,184 +49,203 @@ void startupErrorMessage(const std::string& errorStr)
 	g_loaderSignal.notify_all();
 }
 
+static bool loadConfiguration()
+{
+        // check if config.lua or config.lua.dist exist
+        const std::string& configFile = getString(ConfigManager::CONFIG_FILE);
+        std::ifstream c_test("./" + configFile);
+        if (!c_test.is_open()) {
+                std::ifstream config_lua_dist("./config.lua.dist");
+                if (config_lua_dist.is_open()) {
+                        std::cout << ">> copying config.lua.dist to " << configFile << std::endl;
+                        std::ofstream config_lua(configFile);
+                        config_lua << config_lua_dist.rdbuf();
+                        config_lua.close();
+                        config_lua_dist.close();
+                }
+        } else {
+                c_test.close();
+        }
+
+        std::cout << ">> Loading config" << std::endl;
+        if (!ConfigManager::load()) {
+                startupErrorMessage("Unable to load " + configFile + "!");
+                return false;
+        }
+
+#ifdef _WIN32
+        const std::string& defaultPriority = getString(ConfigManager::DEFAULT_PRIORITY);
+        if (caseInsensitiveEqual(defaultPriority, "high")) {
+                SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+        } else if (caseInsensitiveEqual(defaultPriority, "above-normal")) {
+                SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+        }
+#endif
+
+        std::cout << ">> Loading RSA key " << std::endl;
+        try {
+                std::ifstream key{"key.pem"};
+                std::string pem{std::istreambuf_iterator<char>{key}, std::istreambuf_iterator<char>{}};
+                tfs::rsa::loadPEM(pem);
+        } catch (const std::exception& e) {
+                startupErrorMessage(e.what());
+                return false;
+        }
+
+        return true;
+}
+
+static bool setupDatabase()
+{
+        std::cout << ">> Establishing database connection..." << std::flush;
+
+        if (!Database::getInstance().connect()) {
+                startupErrorMessage("Failed to connect to database.");
+                return false;
+        }
+
+        std::cout << " MySQL " << Database::getClientVersion() << std::endl;
+
+        std::cout << ">> Running database manager" << std::endl;
+
+        if (!DatabaseManager::isDatabaseSetup()) {
+                startupErrorMessage("The database you have specified in config.lua is empty, please import the schema.sql to your database.");
+                return false;
+        }
+
+        g_databaseTasks.start();
+
+        DatabaseManager::updateDatabase();
+
+        if (getBoolean(ConfigManager::OPTIMIZE_DATABASE) && !DatabaseManager::optimizeTables()) {
+                std::cout << "> No tables were optimized." << std::endl;
+        }
+
+        return true;
+}
+
+static bool loadServerData()
+{
+        std::cout << ">> Loading vocations" << std::endl;
+        if (std::ifstream is{"data/XML/vocations.xml"}; !g_vocations.loadFromXml(is, "data/XML/vocations.xml")) {
+                startupErrorMessage("Unable to load vocations!");
+                return false;
+        }
+
+        std::cout << ">> Loading items... ";
+        if (!Item::items.loadFromOtb("data/items/items.otb")) {
+                startupErrorMessage("Unable to load items (OTB)!");
+                return false;
+        }
+        std::cout << fmt::format("OTB v{:d}.{:d}.{:d}", Item::items.majorVersion, Item::items.minorVersion,
+                                 Item::items.buildNumber)
+                  << std::endl;
+
+        if (!Item::items.loadFromXml()) {
+                startupErrorMessage("Unable to load items (XML)!");
+                return false;
+        }
+
+        std::cout << ">> Loading script systems" << std::endl;
+        if (!ScriptingManager::getInstance().loadScriptSystems()) {
+                startupErrorMessage("Failed to load script systems");
+                return false;
+        }
+
+        std::cout << ">> Loading lua scripts" << std::endl;
+        if (!g_scripts->loadScripts("scripts", false, false)) {
+                startupErrorMessage("Failed to load lua scripts");
+                return false;
+        }
+
+        std::cout << ">> Loading monsters" << std::endl;
+        if (!g_monsters.loadFromXml()) {
+                startupErrorMessage("Unable to load monsters!");
+                return false;
+        }
+
+        std::cout << ">> Loading lua monsters" << std::endl;
+        if (!g_scripts->loadScripts("monster", false, false)) {
+                startupErrorMessage("Failed to load lua monsters");
+                return false;
+        }
+
+        std::cout << ">> Loading outfits" << std::endl;
+        if (!Outfits::getInstance().loadFromXml()) {
+                startupErrorMessage("Unable to load outfits!");
+                return false;
+        }
+
+        std::cout << ">> Checking world type... " << std::flush;
+        std::string worldType = boost::algorithm::to_lower_copy(getString(ConfigManager::WORLD_TYPE));
+        if (worldType == "pvp") {
+                g_game.setWorldType(WORLD_TYPE_PVP);
+        } else if (worldType == "no-pvp") {
+                g_game.setWorldType(WORLD_TYPE_NO_PVP);
+        } else if (worldType == "pvp-enforced") {
+                g_game.setWorldType(WORLD_TYPE_PVP_ENFORCED);
+        } else {
+                std::cout << std::endl;
+                startupErrorMessage(fmt::format("Unknown world type: {:s}, valid world types are: pvp, no-pvp and pvp-enforced.",
+                                getString(ConfigManager::WORLD_TYPE)));
+                return false;
+        }
+        std::cout << boost::algorithm::to_upper_copy(worldType) << std::endl;
+
+        std::cout << ">> Loading map" << std::endl;
+        if (!g_game.loadMainMap(getString(ConfigManager::MAP_NAME))) {
+                startupErrorMessage("Failed to load map");
+                return false;
+        }
+
+        return true;
+}
+
+static void startNetworkServices(ServiceManager* services)
+{
+        services->add<ProtocolGame>(static_cast<uint16_t>(getNumber(ConfigManager::GAME_PORT)));
+        services->add<ProtocolLogin>(static_cast<uint16_t>(getNumber(ConfigManager::LOGIN_PORT)));
+        services->add<ProtocolStatus>(static_cast<uint16_t>(getNumber(ConfigManager::STATUS_PORT)));
+        services->add<ProtocolOld>(static_cast<uint16_t>(getNumber(ConfigManager::LOGIN_PORT)));
+
+        tfs::http::start(getString(ConfigManager::IP), getNumber(ConfigManager::HTTP_PORT),
+                         getNumber(ConfigManager::HTTP_WORKERS));
+}
+
 void mainLoader(ServiceManager* services)
 {
-	// dispatcher thread
-	g_game.setGameState(GAME_STATE_STARTUP);
+        g_game.setGameState(GAME_STATE_STARTUP);
 
-	srand(static_cast<unsigned int>(OTSYS_TIME()));
+        srand(static_cast<unsigned int>(OTSYS_TIME()));
 #ifdef _WIN32
-	SetConsoleTitle(STATUS_SERVER_NAME);
+        SetConsoleTitle(STATUS_SERVER_NAME);
 
-	// fixes a problem with escape characters not being processed in Windows consoles
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwMode = 0;
-	GetConsoleMode(hOut, &dwMode);
-	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	SetConsoleMode(hOut, dwMode);
+        // fixes a problem with escape characters not being processed in Windows consoles
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD dwMode = 0;
+        GetConsoleMode(hOut, &dwMode);
+        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        SetConsoleMode(hOut, dwMode);
 #endif
 
-	printServerVersion();
+        printServerVersion();
 
-	// check if config.lua or config.lua.dist exist
-	const std::string& configFile = getString(ConfigManager::CONFIG_FILE);
-	std::ifstream c_test("./" + configFile);
-	if (!c_test.is_open()) {
-		std::ifstream config_lua_dist("./config.lua.dist");
-		if (config_lua_dist.is_open()) {
-			std::cout << ">> copying config.lua.dist to " << configFile << std::endl;
-			std::ofstream config_lua(configFile);
-			config_lua << config_lua_dist.rdbuf();
-			config_lua.close();
-			config_lua_dist.close();
-		}
-	} else {
-		c_test.close();
-	}
+        if (!loadConfiguration()) {
+                return;
+        }
 
-	// read global config
-	std::cout << ">> Loading config" << std::endl;
-	if (!ConfigManager::load()) {
-		startupErrorMessage("Unable to load " + configFile + "!");
-		return;
-	}
+        if (!setupDatabase()) {
+                return;
+        }
 
-#ifdef _WIN32
-	const std::string& defaultPriority = getString(ConfigManager::DEFAULT_PRIORITY);
-	if (caseInsensitiveEqual(defaultPriority, "high")) {
-		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-	} else if (caseInsensitiveEqual(defaultPriority, "above-normal")) {
-		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
-	}
-#endif
+        if (!loadServerData()) {
+                return;
+        }
 
-	// set RSA key
-	std::cout << ">> Loading RSA key " << std::endl;
-	try {
-		std::ifstream key{"key.pem"};
-		std::string pem{std::istreambuf_iterator<char>{key}, std::istreambuf_iterator<char>{}};
-		tfs::rsa::loadPEM(pem);
-	} catch (const std::exception& e) {
-		startupErrorMessage(e.what());
-		return;
-	}
+        std::cout << ">> Initializing gamestate" << std::endl;
+        g_game.setGameState(GAME_STATE_INIT);
 
-	std::cout << ">> Establishing database connection..." << std::flush;
-
-	if (!Database::getInstance().connect()) {
-		startupErrorMessage("Failed to connect to database.");
-		return;
-	}
-
-	std::cout << " MySQL " << Database::getClientVersion() << std::endl;
-
-	// run database manager
-	std::cout << ">> Running database manager" << std::endl;
-
-	if (!DatabaseManager::isDatabaseSetup()) {
-		startupErrorMessage(
-		    "The database you have specified in config.lua is empty, please import the schema.sql to your database.");
-		return;
-	}
-	g_databaseTasks.start();
-
-	DatabaseManager::updateDatabase();
-
-	if (getBoolean(ConfigManager::OPTIMIZE_DATABASE) && !DatabaseManager::optimizeTables()) {
-		std::cout << "> No tables were optimized." << std::endl;
-	}
-
-	// load vocations
-	std::cout << ">> Loading vocations" << std::endl;
-	if (std::ifstream is{"data/XML/vocations.xml"}; !g_vocations.loadFromXml(is, "data/XML/vocations.xml")) {
-		startupErrorMessage("Unable to load vocations!");
-		return;
-	}
-
-	// load item data
-	std::cout << ">> Loading items... ";
-	if (!Item::items.loadFromOtb("data/items/items.otb")) {
-		startupErrorMessage("Unable to load items (OTB)!");
-		return;
-	}
-	std::cout << fmt::format("OTB v{:d}.{:d}.{:d}", Item::items.majorVersion, Item::items.minorVersion,
-	                         Item::items.buildNumber)
-	          << std::endl;
-
-	if (!Item::items.loadFromXml()) {
-		startupErrorMessage("Unable to load items (XML)!");
-		return;
-	}
-
-	std::cout << ">> Loading script systems" << std::endl;
-	if (!ScriptingManager::getInstance().loadScriptSystems()) {
-		startupErrorMessage("Failed to load script systems");
-		return;
-	}
-
-	std::cout << ">> Loading lua scripts" << std::endl;
-	if (!g_scripts->loadScripts("scripts", false, false)) {
-		startupErrorMessage("Failed to load lua scripts");
-		return;
-	}
-
-	std::cout << ">> Loading monsters" << std::endl;
-	if (!g_monsters.loadFromXml()) {
-		startupErrorMessage("Unable to load monsters!");
-		return;
-	}
-
-	std::cout << ">> Loading lua monsters" << std::endl;
-	if (!g_scripts->loadScripts("monster", false, false)) {
-		startupErrorMessage("Failed to load lua monsters");
-		return;
-	}
-
-	std::cout << ">> Loading outfits" << std::endl;
-	if (!Outfits::getInstance().loadFromXml()) {
-		startupErrorMessage("Unable to load outfits!");
-		return;
-	}
-
-	std::cout << ">> Checking world type... " << std::flush;
-	std::string worldType = boost::algorithm::to_lower_copy(getString(ConfigManager::WORLD_TYPE));
-	if (worldType == "pvp") {
-		g_game.setWorldType(WORLD_TYPE_PVP);
-	} else if (worldType == "no-pvp") {
-		g_game.setWorldType(WORLD_TYPE_NO_PVP);
-	} else if (worldType == "pvp-enforced") {
-		g_game.setWorldType(WORLD_TYPE_PVP_ENFORCED);
-	} else {
-		std::cout << std::endl;
-		startupErrorMessage(
-		    fmt::format("Unknown world type: {:s}, valid world types are: pvp, no-pvp and pvp-enforced.",
-		                getString(ConfigManager::WORLD_TYPE)));
-		return;
-	}
-	std::cout << boost::algorithm::to_upper_copy(worldType) << std::endl;
-
-	std::cout << ">> Loading map" << std::endl;
-	if (!g_game.loadMainMap(getString(ConfigManager::MAP_NAME))) {
-		startupErrorMessage("Failed to load map");
-		return;
-	}
-
-	std::cout << ">> Initializing gamestate" << std::endl;
-	g_game.setGameState(GAME_STATE_INIT);
-
-	// Game client protocols
-	services->add<ProtocolGame>(static_cast<uint16_t>(getNumber(ConfigManager::GAME_PORT)));
-	services->add<ProtocolLogin>(static_cast<uint16_t>(getNumber(ConfigManager::LOGIN_PORT)));
-
-	// OT protocols
-	services->add<ProtocolStatus>(static_cast<uint16_t>(getNumber(ConfigManager::STATUS_PORT)));
-
-	// Legacy login protocol
-	services->add<ProtocolOld>(static_cast<uint16_t>(getNumber(ConfigManager::LOGIN_PORT)));
-
-	// HTTP server
-	tfs::http::start(getString(ConfigManager::IP), getNumber(ConfigManager::HTTP_PORT),
-	                 getNumber(ConfigManager::HTTP_WORKERS));
+        startNetworkServices(services);
 
 	RentPeriod_t rentPeriod;
 	std::string strRentPeriod = boost::algorithm::to_lower_copy(getString(ConfigManager::HOUSE_RENT_PERIOD));

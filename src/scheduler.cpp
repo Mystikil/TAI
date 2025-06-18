@@ -5,33 +5,34 @@
 
 #include "scheduler.h"
 
-uint32_t Scheduler::addEvent(SchedulerTask* task)
+uint32_t Scheduler::addEvent(SchedulerTaskPtr task)
 {
-	// check if the event has a valid id
-	if (task->getEventId() == 0) {
-		task->setEventId(++lastEventId);
-	}
+        // check if the event has a valid id
+        if (task->getEventId() == 0) {
+                task->setEventId(++lastEventId);
+        }
 
-	boost::asio::post(io_context, [this, task]() {
-		// insert the event id in the list of active events
-		auto it = eventIdTimerMap.emplace(task->getEventId(), boost::asio::steady_timer{io_context});
-		auto& timer = it.first->second;
+        uint32_t eventId = task->getEventId();
 
-		timer.expires_after(std::chrono::milliseconds(task->getDelay()));
-		timer.async_wait([this, task](const boost::system::error_code& error) {
-			eventIdTimerMap.erase(task->getEventId());
+        boost::asio::post(io_context, [this, task = std::move(task)]() mutable {
+                // insert the event id in the list of active events
+                auto it = eventIdTimerMap.emplace(task->getEventId(), boost::asio::steady_timer{io_context});
+                auto& timer = it.first->second;
 
-			if (error == boost::asio::error::operation_aborted || getState() == THREAD_STATE_TERMINATED) {
-				// the timer has been manually canceled(timer->cancel()) or Scheduler::shutdown has been called
-				delete task;
-				return;
-			}
+                timer.expires_after(std::chrono::milliseconds(task->getDelay()));
+                timer.async_wait([this, task = std::move(task)](const boost::system::error_code& error) mutable {
+                        eventIdTimerMap.erase(task->getEventId());
 
-			g_dispatcher.addTask(task);
-		});
-	});
+                        if (error == boost::asio::error::operation_aborted || getState() == THREAD_STATE_TERMINATED) {
+                                // The timer was cancelled or the scheduler is shutting down.
+                                return;
+                        }
 
-	return task->getEventId();
+                        g_dispatcher.addTask(task.release());
+                });
+        });
+
+        return eventId;
 }
 
 void Scheduler::stopEvent(uint32_t eventId)
@@ -62,4 +63,7 @@ void Scheduler::shutdown()
 	});
 }
 
-SchedulerTask* createSchedulerTask(uint32_t delay, TaskFunc&& f) { return new SchedulerTask(delay, std::move(f)); }
+SchedulerTaskPtr createSchedulerTask(uint32_t delay, TaskFunc&& f)
+{
+        return SchedulerTaskPtr(new SchedulerTask(delay, std::move(f)));
+}

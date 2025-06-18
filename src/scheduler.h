@@ -6,9 +6,12 @@
 
 #include "tasks.h"
 #include "thread_holder_base.h"
+#include <memory>
 
 static constexpr int32_t SCHEDULER_MINTICKS = 50;
 
+// A small task that will be executed later.
+// Using unique_ptr keeps us from forgetting to delete it.
 class SchedulerTask : public Task
 {
 public:
@@ -18,21 +21,25 @@ public:
 	uint32_t getDelay() const { return delay; }
 
 private:
-	SchedulerTask(uint32_t delay, TaskFunc&& f) : Task(std::move(f)), delay(delay) {}
+        SchedulerTask(uint32_t delay, TaskFunc&& f) : Task(std::move(f)), delay(delay) {}
 
 	uint32_t eventId = 0;
 	uint32_t delay = 0;
 
-	friend SchedulerTask* createSchedulerTask(uint32_t, TaskFunc&&);
+        friend std::unique_ptr<SchedulerTask> createSchedulerTask(uint32_t, TaskFunc&&);
 };
 
-SchedulerTask* createSchedulerTask(uint32_t delay, TaskFunc&& f);
+using SchedulerTaskPtr = std::unique_ptr<SchedulerTask>;
+
+// Create a task that the scheduler can run.
+SchedulerTaskPtr createSchedulerTask(uint32_t delay, TaskFunc&& f);
 
 class Scheduler : public ThreadHolder<Scheduler>
 {
 public:
-	uint32_t addEvent(SchedulerTask* task);
-	void stopEvent(uint32_t eventId);
+        // Add a task and get back its id so we can stop it later.
+        uint32_t addEvent(SchedulerTaskPtr task);
+        void stopEvent(uint32_t eventId);
 
 	void shutdown();
 
