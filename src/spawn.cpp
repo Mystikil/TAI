@@ -4,6 +4,7 @@
 #include "otpch.h"
 
 #include "spawn.h"
+#include <memory>
 
 #include "configmanager.h"
 #include "events.h"
@@ -248,11 +249,10 @@ void Spawn::startSpawnCheck()
 
 Spawn::~Spawn()
 {
-	for (const auto& it : spawnedMap) {
-		Monster* monster = it.second;
-		monster->setSpawn(nullptr);
-		monster->decrementReferenceCounter();
-	}
+        for (auto& it : spawnedMap) {
+                it.second->setSpawn(nullptr);
+        }
+        spawnedMap.clear();
 }
 
 bool Spawn::findPlayer(const Position& pos)
@@ -312,10 +312,12 @@ bool Spawn::spawnMonster(uint32_t spawnId, spawnBlock_t sb, bool startup /* = fa
 bool Spawn::spawnMonster(uint32_t spawnId, MonsterType* mType, const Position& pos, Direction dir,
                          bool startup /*= false*/)
 {
-	std::unique_ptr<Monster> monster_ptr(new Monster(mType));
-	if (!tfs::events::monster::onSpawn(monster_ptr.get(), pos, startup, false)) {
-		return false;
-	}
+        auto monster_ptr = std::shared_ptr<Monster>(new Monster(mType), [](Monster* m) {
+                m->decrementReferenceCounter();
+        });
+        if (!tfs::events::monster::onSpawn(monster_ptr.get(), pos, startup, false)) {
+                return false;
+        }
 
 	if (startup) {
 		// No need to send out events to the surrounding since there is no one out there to listen!
@@ -330,13 +332,12 @@ bool Spawn::spawnMonster(uint32_t spawnId, MonsterType* mType, const Position& p
 		}
 	}
 
-	Monster* monster = monster_ptr.release();
-	monster->setDirection(dir);
-	monster->setSpawn(this);
-	monster->setMasterPos(pos);
-	monster->incrementReferenceCounter();
+        monster_ptr->setDirection(dir);
+        monster_ptr->setSpawn(this);
+        monster_ptr->setMasterPos(pos);
+        monster_ptr->incrementReferenceCounter();
 
-	spawnedMap.insert({spawnId, monster});
+        spawnedMap.insert({spawnId, monster_ptr});
 	spawnMap[spawnId].lastSpawn = OTSYS_TIME();
 	return true;
 }
@@ -384,16 +385,15 @@ void Spawn::checkSpawn()
 
 void Spawn::cleanup()
 {
-	auto it = spawnedMap.begin();
-	while (it != spawnedMap.end()) {
-		Monster* monster = it->second;
-		if (monster->isRemoved()) {
-			monster->decrementReferenceCounter();
-			it = spawnedMap.erase(it);
-		} else {
-			++it;
-		}
-	}
+        auto it = spawnedMap.begin();
+        while (it != spawnedMap.end()) {
+                auto monster = it->second;
+                if (monster->isRemoved()) {
+                        it = spawnedMap.erase(it);
+                } else {
+                        ++it;
+                }
+        }
 }
 
 bool Spawn::addBlock(spawnBlock_t sb)
@@ -424,13 +424,12 @@ bool Spawn::addMonster(const std::string& name, const Position& pos, Direction d
 
 void Spawn::removeMonster(Monster* monster)
 {
-	for (auto it = spawnedMap.begin(), end = spawnedMap.end(); it != end; ++it) {
-		if (it->second == monster) {
-			monster->decrementReferenceCounter();
-			spawnedMap.erase(it);
-			break;
-		}
-	}
+        for (auto it = spawnedMap.begin(), end = spawnedMap.end(); it != end; ++it) {
+                if (it->second.get() == monster) {
+                        spawnedMap.erase(it);
+                        break;
+                }
+        }
 }
 
 void Spawn::stopEvent()
