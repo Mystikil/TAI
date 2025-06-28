@@ -149,7 +149,15 @@ public:
 		return (((lv - 6ULL) * lv + 17ULL) * lv - 12ULL) / 6ULL * 100ULL;
 	}
 
-	uint16_t getStaminaMinutes() const { return staminaMinutes; }
+        uint16_t getStaminaMinutes() const { return staminaMinutes; }
+
+        uint16_t getStrength() const { return classlessStats.strength; }
+        uint16_t getAgility() const { return classlessStats.agility; }
+        uint16_t getVitality() const { return classlessStats.vitality; }
+        uint16_t getIntelligence() const { return classlessStats.intelligence; }
+        uint16_t getLuck() const { return classlessStats.luck; }
+        uint16_t getCharisma() const { return classlessStats.charisma; }
+        uint16_t getSpirit() const { return classlessStats.spirit; }
 
 	bool addOfflineTrainingTries(skills_t skill, uint64_t tries);
 

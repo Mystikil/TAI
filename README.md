@@ -15,6 +15,9 @@
 - Controlled via `enableClasslessSystem` in `config.lua`.
 - Instead of vocations, players gain free attribute points every level.
 - Customizable via `pointsPerLevel`.
+- Attributes include **Health**, **Mana**, **Capacity**, and the newly added
+  **Strength**, **Agility**, **Vitality**, **Intelligence**, **Luck**, **Charisma**
+  and **Spirit**.
 
 ### 🧪 Alchemy System
 - Craft potions and materials using player-discovered or scripted recipes.

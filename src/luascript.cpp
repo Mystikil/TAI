@@ -2745,7 +2745,15 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod(L, "Player", "getCapacity", LuaScriptInterface::luaPlayerGetCapacity);
 	registerMethod(L, "Player", "setCapacity", LuaScriptInterface::luaPlayerSetCapacity);
 
-	registerMethod(L, "Player", "getFreeCapacity", LuaScriptInterface::luaPlayerGetFreeCapacity);
+        registerMethod(L, "Player", "getFreeCapacity", LuaScriptInterface::luaPlayerGetFreeCapacity);
+
+        registerMethod(L, "Player", "getStrength", LuaScriptInterface::luaPlayerGetStrength);
+        registerMethod(L, "Player", "getAgility", LuaScriptInterface::luaPlayerGetAgility);
+        registerMethod(L, "Player", "getVitality", LuaScriptInterface::luaPlayerGetVitality);
+        registerMethod(L, "Player", "getIntelligence", LuaScriptInterface::luaPlayerGetIntelligence);
+        registerMethod(L, "Player", "getLuck", LuaScriptInterface::luaPlayerGetLuck);
+        registerMethod(L, "Player", "getCharisma", LuaScriptInterface::luaPlayerGetCharisma);
+        registerMethod(L, "Player", "getSpirit", LuaScriptInterface::luaPlayerGetSpirit);
 
 	registerMethod(L, "Player", "getDepotChest", LuaScriptInterface::luaPlayerGetDepotChest);
 	registerMethod(L, "Player", "getInbox", LuaScriptInterface::luaPlayerGetInbox);
@@ -9068,14 +9076,98 @@ int LuaScriptInterface::luaPlayerSetCapacity(lua_State* L)
 
 int LuaScriptInterface::luaPlayerGetFreeCapacity(lua_State* L)
 {
-	// player:getFreeCapacity()
-	Player* player = tfs::lua::getUserdata<Player>(L, 1);
-	if (player) {
-		lua_pushnumber(L, player->getFreeCapacity());
-	} else {
-		lua_pushnil(L);
-	}
-	return 1;
+        // player:getFreeCapacity()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getFreeCapacity());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetStrength(lua_State* L)
+{
+        // player:getStrength()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getStrength());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetAgility(lua_State* L)
+{
+        // player:getAgility()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getAgility());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetVitality(lua_State* L)
+{
+        // player:getVitality()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getVitality());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetIntelligence(lua_State* L)
+{
+        // player:getIntelligence()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getIntelligence());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetLuck(lua_State* L)
+{
+        // player:getLuck()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getLuck());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetCharisma(lua_State* L)
+{
+        // player:getCharisma()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getCharisma());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetSpirit(lua_State* L)
+{
+        // player:getSpirit()
+        Player* player = tfs::lua::getUserdata<Player>(L, 1);
+        if (player) {
+                lua_pushnumber(L, player->getSpirit());
+        } else {
+                lua_pushnil(L);
+        }
+        return 1;
 }
 
 int LuaScriptInterface::luaPlayerGetDepotChest(lua_State* L)

@@ -1,0 +1,17 @@
+local spell = Spell(SPELL_INSTANT)
+function spell.onCastSpell(creature, variant)
+        creature:sendTextMessage(MESSAGE_INFO_DESCR, "Vitality: " .. creature:getVitality())
+        return true
+end
+spell:group("support")
+spell:id(303)
+spell:name("Check Vitality")
+spell:words("exiva vit")
+spell:level(1)
+spell:mana(0)
+spell:isAggressive(false)
+spell:isSelfTarget(true)
+spell:cooldown(1000)
+spell:groupCooldown(1000)
+spell:vocation("sorcerer;true", "druid;true", "paladin;true", "knight;true", "master sorcerer;true", "elder druid;true", "royal paladin;true", "elite knight;true")
+spell:register()
