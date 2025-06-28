@@ -92,6 +92,9 @@ Right-click > Restore vcpkg dependencies
 
 Build > Build Solution (Release or Debug)
 ```
+### Database Configuration
+Copy `.env.example` to `.env` and set `MYSQL_DATABASE` to your database name. Other `MYSQL_*` variables configure host, user and password.
+
 ```
 ⚙️ Configuration Guide
 Edit your config.lua file to enable/disable key systems:
