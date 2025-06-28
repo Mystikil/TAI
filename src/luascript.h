@@ -624,7 +624,15 @@ private:
 	static int luaPlayerGetCapacity(lua_State* L);
 	static int luaPlayerSetCapacity(lua_State* L);
 
-	static int luaPlayerGetFreeCapacity(lua_State* L);
+        static int luaPlayerGetFreeCapacity(lua_State* L);
+
+        static int luaPlayerGetStrength(lua_State* L);
+        static int luaPlayerGetAgility(lua_State* L);
+        static int luaPlayerGetVitality(lua_State* L);
+        static int luaPlayerGetIntelligence(lua_State* L);
+        static int luaPlayerGetLuck(lua_State* L);
+        static int luaPlayerGetCharisma(lua_State* L);
+        static int luaPlayerGetSpirit(lua_State* L);
 
 	static int luaPlayerGetDepotChest(lua_State* L);
 	static int luaPlayerGetInbox(lua_State* L);
