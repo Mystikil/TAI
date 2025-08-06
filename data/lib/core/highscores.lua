@@ -27,6 +27,44 @@ end
 
 highscoresExcludedGroups = {4, 5, 6}
 
+local loyaltyRanks = {
+	{7000, "Exalted"},
+	{6000, "Mentor"},
+	{5500, "Wise"},
+	{5000, "Sage"},
+	{4500, "Counsellor"},
+	{4000, "Advisor"},
+	{3500, "Sentry"},
+	{3000, "Watchman"},
+	{2500, "Keeper"},
+	{2000, "Guardian"},
+	{1500, "Warrior"},
+	{1000, "Squire"},
+	{500, "Warden"},
+	{300, "Steward"},
+	{150, "Sentinel"},
+	{50, "Scout"}
+}
+
+local function getLoyaltyTitle(points)
+	for _, rank in ipairs(loyaltyRanks) do
+		if points >= rank[1] then
+			return rank[2]
+		end
+	end
+	return ""
+end
+
+local function getPlayerLoyalty(playerId)
+	local query = db.storeQuery("SELECT `loyalty_points` AS `loyalty` FROM `players` WHERE `id` = " .. playerId)
+	if query then
+		local loyalty = result.getNumber(query, "loyalty")
+		result.free(query)
+		return loyalty
+	end
+	return 0
+end
+
 HIGHSCORES_BATTLEYE_NOT_PROTECTED = 0
 HIGHSCORES_BATTLEYE_PROTECTED = 1
 HIGHSCORES_BATTLEYE_INITIALLY_PROTECTED = 2
@@ -202,7 +240,7 @@ local function fetch(self)
 				id = result.getNumber(resultId, "id"),
 				rank = rank,
 				name = result.getString(resultId, "name"),
-				title = "", -- TODO: loyalty system
+			       title = getLoyaltyTitle(getPlayerLoyalty(result.getNumber(resultId, "id"))),
 				vocation = clientIdsVocation[result.getNumber(resultId, "vocation")] or VOCATION_NONE,
 				world = world,
 				level = result.getNumber(resultId, "level"),
