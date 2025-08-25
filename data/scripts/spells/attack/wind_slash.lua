@@ -18,7 +18,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(308)
+spell:id(186)
 spell:name("Wind Slash")
 spell:words("exori ventus")
 spell:level(18)

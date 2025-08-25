@@ -19,7 +19,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(313)
+spell:id(191)
 spell:name("Toxic Cloud")
 spell:words("exevo mortera")
 spell:level(28)

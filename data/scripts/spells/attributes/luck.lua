@@ -4,7 +4,7 @@ function spell.onCastSpell(creature, variant)
         return true
 end
 spell:group("support")
-spell:id(305)
+spell:id(183)
 spell:name("Check Luck")
 spell:words("exiva luc")
 spell:level(1)

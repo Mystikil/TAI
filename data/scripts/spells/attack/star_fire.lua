@@ -18,7 +18,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(312)
+spell:id(190)
 spell:name("Star Fire")
 spell:words("exori stellar flam")
 spell:level(40)

@@ -14,7 +14,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("support")
-spell:id(315)
+spell:id(193)
 spell:name("Speed Boost")
 spell:words("utani tempo lux")
 spell:level(20)
