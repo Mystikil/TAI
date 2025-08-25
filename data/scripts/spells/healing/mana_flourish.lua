@@ -16,7 +16,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("healing")
-spell:id(316)
+spell:id(194)
 spell:name("Mana Flourish")
 spell:words("utura mana")
 spell:level(20)

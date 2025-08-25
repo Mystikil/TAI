@@ -18,7 +18,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("healing")
-spell:id(317)
+spell:id(195)
 spell:name("Healing Wave")
 spell:words("exura mas sio")
 spell:level(34)

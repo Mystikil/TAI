@@ -18,7 +18,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(309)
+spell:id(187)
 spell:name("Frost Nova")
 spell:words("exevo frigo mas")
 spell:level(30)

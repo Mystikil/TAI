@@ -18,7 +18,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(310)
+spell:id(188)
 spell:name("Shadow Bolt")
 spell:words("exori mort hur")
 spell:level(24)

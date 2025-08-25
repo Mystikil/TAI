@@ -15,7 +15,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("support")
-spell:id(314)
+spell:id(192)
 spell:name("Holy Barrier")
 spell:words("utamo sancta")
 spell:level(24)

@@ -4,7 +4,7 @@ function spell.onCastSpell(creature, variant)
         return true
 end
 spell:group("support")
-spell:id(301)
+spell:id(179)
 spell:name("Check Strength")
 spell:words("exiva str")
 spell:level(1)

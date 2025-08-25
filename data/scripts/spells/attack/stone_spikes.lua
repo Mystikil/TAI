@@ -19,7 +19,7 @@ function spell.onCastSpell(creature, variant)
 end
 
 spell:group("attack")
-spell:id(311)
+spell:id(189)
 spell:name("Stone Spikes")
 spell:words("exori tera mas")
 spell:level(32)
